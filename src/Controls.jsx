@@ -1,6 +1,14 @@
 import React, { useRef } from "react";
 
-export default function Controls({ setAnimal, isHere }) {
+export default function Controls({
+  setAnimal,
+  isHere,
+  currentJourney,
+  setCurrentJourney,
+  items,
+  setDesert,
+  setLake,
+}) {
   const typeRef = useRef();
 
   const handleSubmit = (e) => {
@@ -10,16 +18,35 @@ export default function Controls({ setAnimal, isHere }) {
   };
 
   const handleJourney = () => {
+    const newItem = !isHere
+      ? items[Math.floor(Math.random() * items.length)]
+      : null;
+
+    if (currentJourney === "lake" && newItem) {
+      setLake((lake) => ({
+        ...lake,
+        items: lake.items.filter((item) => item.id !== newItem.id),
+      }));
+    }
+    if (currentJourney === "desert" && newItem) {
+      setDesert((desert) => ({
+        ...desert,
+        items: desert.items.filter((item) => item.id !== newItem.id),
+      }));
+    }
+
     setAnimal((animal) => {
-      if (animal.isHere) {
-        return {
-          ...animal,
-          isHere: !animal.isHere,
-          journeysNo: animal.journeysNo + 1,
-        };
-      } else {
-        return { ...animal, isHere: !animal.isHere };
-      }
+      return {
+        ...animal,
+        isHere: !animal.isHere,
+        journeys: isHere
+          ? {
+              ...animal.journeys,
+              [currentJourney]: { no: animal.journeys[currentJourney].no + 1 },
+            }
+          : animal.journeys,
+        items: !isHere ? [...animal.items, newItem] : animal.items,
+      };
     });
   };
 
@@ -32,6 +59,14 @@ export default function Controls({ setAnimal, isHere }) {
       <button onClick={handleJourney}>
         {isHere ? "Go on a Journey" : "Return from the Journey"}
       </button>
+      <select
+        value={currentJourney}
+        onChange={(e) => setCurrentJourney(e.target.value)}
+        disabled={!isHere}
+      >
+        <option value="lake">Lake</option>
+        <option value="desert">Desert</option>
+      </select>
     </div>
   );
 }
